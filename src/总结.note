@@ -1,0 +1,157 @@
+synchronized: 
+	1、锁的是对象
+		也就是引用所指向堆内存中的对象，可以是普通实例对象(this)，也可以是类对象(锁定的是静态static方法)
+		如果改变了引用的指向，则锁住的对象也会跟着变化
+	2、同步锁
+		某线程获取该锁后，其它线程必须等待获取该锁
+	3、保证原子性和可见性
+		原子性：获取对应锁的线程在操作代码块时不会被其他线程打断
+		可见性：修改的值在线程之间都是可见的
+	4、同步和非同步调用
+		得到锁的线程调用同步方法时不影响其他线程执行非同步方法
+		同步方法执行时可以调用另外的同步方法(一个线程得到某个锁时再次获取同一把锁叫着重入锁)，
+			另一种情形，子类调用父类的同步方法
+	5、异常
+		代码发生异常则会导致锁的释放
+	6、尽量不要将字符串当锁的对象	
+	
+		
+volatile:
+	1、只能修饰变量
+	
+	2、可见性和非原子性
+		原子性：不能保证数据在多线程操作时是一致性
+		可见性：修改的值在线程之间都是可见的
+	3、效率
+		要比synchronized的效率高
+		
+AtomicXXXXX:
+	1、自身的方法都是原子性
+		虽说该类能保证自身的方法都是原子操作，但是不能保证多个原子方法之间也是原子操作
+		
+wait/notify/notifyAll:
+	wait--->当前线程释放所获得的锁并处于等待状态
+	notify/notifyAll--->唤醒当前的某个/多个正在等待的线程，但是不会释放对应的锁
+	
+	一般上述两者都是配对的来使用，且必须是锁的对象来调用(要在同步代码块中使用)
+	
+门闩:
+	CountDownLatch，构造函数指定一个初始值，当初始值通过countDown方法执行多次后，初始值变为0时
+					调用了await方法的线程将会执行，可参考MyContainer5
+					
+ReentrantLock:
+	Lock的实现类，作用是解决了synchronized所不能解决的一些问题点
+	1、可以中断正在等候获取锁的线程
+			lockInterruptibly/interrupt配合使用
+	2、可以指定为公平锁(默认为非公平锁)，为了保证公平固然会消耗性能
+			ReentrantLock lock = new ReentrantLock(true);构造函数指定为true时公平锁
+	3、指定时间内获取锁，若没有得到锁，可自行判断是否继续等待
+			trylock(time)
+	4、相比wait/notify/notifyAll，ReentrantLock可以精确的指定哪些线程等待和唤醒，也提供了类似的方法
+			await/signal/signalAll
+	5、和synchronized不同的是，ReentrantLock需要手动上锁/释放锁，且如果锁范围内的代码出现异常一定要释放锁
+	     所以释放锁经常放在finally中使用
+	     
+	感觉ReentrantLock就是完全替代了synchronized，性能比synchronized好，具有synchronized所没有的特性
+	最终还是依照不同的业务场景来使用
+	
+ThreadLocal:
+	线程本地变量，每个线程都有自己的变量，且修改之后互不影响其他线程的值，详见看c_022包
+	
+	
+c_025:
+	主要讲队列
+		ConcurrentLinkedQueue：
+			无界队列，先进后出
+		LinkedBlockingQueue：
+			基于链表阻塞的队列，没有指定队列的大小时(Integer.MAX_VALUE)，就是一个无界队列，直到把内存撑满为止
+		ArrayBlockingQueue：
+			基于数组阻塞的队列，有界队列
+		DelayQueue：
+			定时队列，指定的延迟时间到了，才能从队列中拿去元素
+		LinkedTransferQueue：
+			生产者线程直接将生产的东西交给消费者线程，不会放到队列中（这样比放在队列里的效率高），没有则阻塞
+		SynchronousQueue：
+			容量为0的队列，生产线程必须将生产的东西交给消费者线程，否则就一直阻塞
+		CopyOnWriteArrayList：
+			写时复制(将原有的复制一份再添加元素，将引用指向复制后的容器)，多用于读多写少的情况下
+		
+		Map：
+			ConcurrentHashMap：线程安全，效率高
+			ConcurrentSkipListMap：线程安全，效率高，并且对插入的数据进行排序
+			Hashtable：线程安全，效率低(基本上方法都是用synchronized)
+			
+			HashMap：线程不安全，可以使用工具类进行包装来达到线程安全(Collections.SynchronizedXXX)，但是效率低
+			
+			效率的高低
+			ConcurrentHashMap > ConcurrentSkipListMap > Hashtable(或者Collections.SynchronizedXXX)
+	
+c_026:
+	主要讲线程池
+		newFixedThreadPool：固定线程数量的线程池
+		
+		newCachedThreadPool：
+			初始线程池没有线程
+			特点：
+				1、有任务来，如果线程池中没有空闲或者多余的线程，则起一个线程来执行任务
+				2、如果线程在60s(默认值，可以指定)没有接收到任务，则自动销毁
+			
+		newSingleThreadExecutor：只有一个线程的的线程池，能保证任务有顺序的执行
+		
+		newScheduledThreadPool：定长、定时执行任务的线程池，线程执行完可以复用，如果线程没有空闲的则任务等待被执行
+			
+		newWorkStealingPool：其原理是ForkJoinPool
+		
+		ForkJoinPool：将大任务拆分(fork)成小任务，然后再进行join，通常配合ForkJoinPool两个子类，
+						RecursiveAction：该没有返回值
+						RecursiveTask：有返回值
+	
+	
+	
+	Callable和Runnable的区别：
+		相同点：两者都可以编写多线程，通过Thread.start()来启动线程
+		不同点：Callable有返回值，可以向外抛出异常，Runnable没有返回值，异常自己消化
+	
+	
+	
+		
+	
+	
+	
+	
+			
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+	
