@@ -18,8 +18,12 @@ public class LocalVariable {
         System.out.println(Thread.currentThread().getName() + ", " + sum);
     }
 
+    public People get() {
+        return new People();
+    }
+
     public void add(People p) {
-//        People people = p;
+        People people = p;
         for (int i = 0; i < 100000; i++) {
             p.setAge();
         }
@@ -57,21 +61,38 @@ public class LocalVariable {
     }
 
     public static void main(String[] args) {
+        // 方法内的局部参数不存在并发问题
 //        LocalVariable l = new LocalVariable();
 //        for (int i = 0; i < 10; i++) {
 //            new Thread(() -> l.add()).start();
 //        }
 
+        // 参数是引用类型，但是每次调用的时候都是创建一个新的People对象
+//        People p = new People();
+//        LocalVariable l = new LocalVariable();
+//        for (int i = 0; i < 10; i++) {
+//            new Thread(() -> l.add(l.get())).start();
+//        }
+
+        // 参数类型为引用类型(如果内部使用局部参数来接收)，但是该类型被多个线程共用，存在并发问题
 //        People p = new People();
 //        LocalVariable l = new LocalVariable();
 //        for (int i = 0; i < 10; i++) {
 //            new Thread(() -> l.add(p)).start();
 //        }
 
-        LocalVariable l = new LocalVariable();
-        for (int i = 0; i < 10; i++) {
-            new Thread(() -> l.addAge()).start();
-        }
+        // 参数类型为引用类型(如果内部使用局部参数来接收)，但是该类型依据被多个线程共用，存在并发问题
+//        People p = new People();
+//        LocalVariable l = new LocalVariable();
+//        for (int i = 0; i < 10; i++) {
+//            new Thread(() -> l.add(p)).start();
+//        }
+
+        // 局部参数不存在并发问题
+//        LocalVariable l = new LocalVariable();
+//        for (int i = 0; i < 10; i++) {
+//            new Thread(() -> l.addAge()).start();
+//        }
     }
 }
 
