@@ -3,7 +3,7 @@ package juc.phaser;
 import java.util.concurrent.Phaser;
 
 /**
- * phaser
+ * phaser：阶段的意思，各个阶段执行的结果看呢过不一致，但必须等待其他的线程到来才能执行下一步操作
  * java多线程技术提供了Phaser工具类，Phaser表示“阶段器”，用来解决控制多个线程分阶段共同完成任务的情景问题。
  * 其作用相比CountDownLatch和CyclicBarrier更加灵活，
  * 例如有这样的一个题目：
