@@ -1,4 +1,4 @@
-package com.hdsx.juc;
+package juc;
 
 import org.junit.Test;
 
