@@ -8,24 +8,24 @@ import java.util.concurrent.CountDownLatch;
 public class CountDownLatchTest {
     public static void main(String[] args) throws InterruptedException {
 
-//        CountDownLatch latch = new CountDownLatch(10);
-//        for(int i = 0; i < 10; i ++) {
-//
-//            new Thread(() -> {
-//                System.out.println(Thread.currentThread().getName());
-//
-//                latch.countDown();
-//
-//            }, "t" + i).start();
-//        }
-//        // 当不采用await时，下面的代码会在上面执行完之前执行
-//        try {
-//            latch.await();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println("终于执行完了");
-//        System.out.println("======================================");
+        CountDownLatch latch = new CountDownLatch(10);
+        for(int i = 0; i < 10; i ++) {
+
+            int finalI = i;
+            new Thread(() -> {
+                System.out.println(finalI);
+                latch.countDown();
+                System.out.println(Thread.currentThread().getName());
+            }, "t" + i).start();
+        }
+        // 当不采用await时，下面的代码会在上面执行完之前执行
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("终于执行完了");
+        System.out.println("======================================");
 
 //        CountDownLatch latch = new CountDownLatch(1);
 //        new Thread(new TestCountDownLatch(latch)).start();
